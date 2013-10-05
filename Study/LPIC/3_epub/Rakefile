@@ -1,0 +1,24 @@
+SRC = '../1_download'
+# SRC = '../2_process'
+DST = 'build'
+MAKEPRG = './make.sh'
+
+EPUB = (0..3).to_a.map {|n| "#{DST}/lpic-#{n}.epub"}
+
+require 'rake/clean'
+CLOBBER.include("#{DST}/*.epub")
+
+task :all => EPUB[1..3]
+task :default => EPUB[1]
+
+(1..3).each do |n|
+
+  desc "Build LPIC-#{n}"
+  task "lpic-#{n}" => EPUB[n]
+
+  # file EPUB[n] => Dir.glob("#{SRC}/#{n}0?/*.shtml") do
+  file EPUB[n] => FileList["#{SRC}/#{n}0?/*.shtml"] do
+    sh "#{MAKEPRG} #{n}"
+  end
+
+end
