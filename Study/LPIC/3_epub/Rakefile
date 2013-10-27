@@ -3,7 +3,9 @@ SRC = '../1_download'
 DST = 'build'
 MAKEPRG = './make.sh'
 
+## FIXME
 EPUB = (0..3).to_a.map {|n| "#{DST}/lpic-#{n}.epub"}
+# EPUB = (0..3).to_a.map {|n| "#{DST}/lpic-#{n}_*.epub"}
 
 require 'rake/clean'
 CLOBBER.include("#{DST}/*.epub")
