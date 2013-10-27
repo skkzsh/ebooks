@@ -24,12 +24,12 @@ meta=${src}/metadata.xml
 dst=build
 
 ## Prepare with templates
-cat ${title} \
-| sed "s/%NOW%/`LANG=C date +'%b %d, %Y'`/" \
-| sed "s/%NUM%/${level}/" \
-> ${title}_tmp
-
-sed "s/%NUM%/${level}/" $meta > ${meta}_tmp
+for file in ${title} ${meta} ; do
+    cat ${file} \
+    | sed "s/%NOW%/`LANG=C date +'%b %d, %Y'`/" \
+    | sed "s/%NUM%/${level}/" \
+    > ${file}_tmp
+done
 
 body=''
 for n in ${nums} ; do
@@ -49,6 +49,8 @@ ${body} \
 -o ${dst}/lpic-${level}.epub \
 --epub-cover-image img/lpic-${level}.jpeg \
 --epub-metadata ${meta}_tmp
+
+# -o ${dst}/lpic-${level}_`date +'%y%m%d'`.epub \
 
 ## Clean temporary files
 rm ${title}_tmp ${meta}_tmp ${h1}_tmp_?
