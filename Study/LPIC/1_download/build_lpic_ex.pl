@@ -16,7 +16,7 @@ use 5.010;
 # use encoding 'utf-8'; # XXX
 # binmode STDOUT, ":utf8"; # XXX
 
-use Encode qw( encode );
+use Encode qw( encode_utf8 );
 use HTML::Entities qw( decode_entities );
 use File::Basename qw( basename );
 use Path::Class qw( file dir );
@@ -76,33 +76,34 @@ sub get_from_exam {
         my $link = $links[$_ - 1];
         # say $link->url; exit;    # Debug
 
-        my $max = 500;
+        ## Go to exercise
+        $mech->get( $link->url );
+        # say $mech->content; exit;    # Debug
+
+        ## Extract HTML
+        my ( $extracted_html, $title, $exam_num ) = &extract_html($mech->content);
+
+        ## File name
+        my $max = 999;
         my $prefix = sprintf( "%03d", $max - @links + $_ );
-        my $file = file( $exam, $prefix . '_' . basename $link->url );
+        my $file = file( $exam, $exam_num . '_' . $prefix . '_' . basename $link->url );
 
         ## Get only when outdated
         my $check = &check_update( $_, $exam, $file, @links );
         if    ( $check eq 'all-updated' ) { return; }
         elsif ( $check eq 'this-updated' ) { next; }
 
-        ## Go to exercise
-        $mech->get( $link->url );
-        # say $mech->content; exit;    # Debug
-
-        ## Extract HTML
-        my ( $extracted_html, $title ) = &extract_html($mech->content);
-
         ## Output progress
-        # print '[', $num, '/', scalar @links, '] ',
-        #     encode( 'utf-8', $title ), " " x 50, "\r";
-        my $num = sprintf( "%03d", $_ );
+        # print '[', $counter, '/', scalar @links, '] ',
+        #     encode_utf8 $title, " " x 50, "\r";
+        my $counter = sprintf( "%03d", $_ );
         my $sum = sprintf( "%03d", scalar @links );
-        print '[', $exam, '] ', '(', $num, '/', $sum, ') ',
-            encode( 'utf-8', $title ), "\n";
+        print '[', $exam, '] ', '(', $counter, '/', $sum, ') ',
+            encode_utf8 $title, "\n";
 
         ## Write to file
         open my $fh, '>', $file or die $!;
-        print $fh encode( 'utf-8', $extracted_html );
+        print $fh encode_utf8 $extracted_html;
         # print $fh $extracted_html;
         close $fh or die $!;
     }
@@ -151,8 +152,9 @@ sub extract_html {
     $tree->parse($html);
 
     ## Extract Content
+    my $title = $tree->look_down( _tag => 'h2', class => 'title04h2' );
     my @tags = (
-        $tree->look_down( _tag => 'h2', class => 'title04h2' ),
+        $title,
         $tree->look_down( 'class', 'exercise' ),
         $tree->look_down( _tag => 'h3', class => 'style01' ),
         $tree->look_down( 'class', 'answer' ),
@@ -170,12 +172,16 @@ sub extract_html {
     # print @enc_extracted_htmls; exit;    # Debug
     # print $enc_extracted_html; exit;    # Debug
 
-    my $title = $tags[0]->as_text;
-
-    $tree = $tree->delete;
-
     my $extracted_html = decode_entities($enc_extracted_html);
     # say $extracted_html; exit;    # Debug
 
-    ( $extracted_html, $title );
+    ## Title
+    my $title_txt = $title->as_text;
+    my $title_num_txt = $title->find('strong')->as_text;
+    $title_num_txt =~ s/\s+//g; # Delete space
+    $title_num_txt =~ s/\.//g; # Delete dot
+
+    $tree = $tree->delete;
+
+    ( $extracted_html, $title_txt, $title_num_txt );
 }
