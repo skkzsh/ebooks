@@ -1,0 +1,14 @@
+{
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.pl": "perlcritic"
+  },
+  "devDependencies": {
+    "husky": "*",
+    "lint-staged": "*"
+  }
+}
