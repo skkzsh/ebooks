@@ -12,7 +12,6 @@ use warnings;
 # use utf8; # XXX
 # $|++;
 
-# use encoding 'utf-8'; # XXX
 # binmode STDOUT, ":utf8"; # XXX
 
 use Encode qw( encode_utf8 );
@@ -57,17 +56,22 @@ sub omit {
     $tree->parse( get( $url . '/' . $file ) );
 
     ## Omit Content
+    ## FIXME: id="header2"だけを削除したい
     $_->delete for (
-        $tree->find('head'),
+    #     $tree->find('head'),
         $tree->find('h3'),
         $tree->look_down('id', 'footer'),
-        $tree->find('script'),
-        $tree->find('img'),
+    #     $tree->find('script'),
+    #     $tree->find('img'),
     );
+
+    ## FIXME: 中身だけが欲しい
+    my $content = $tree->look_down( 'id', 'Box' );
 
     ## Write to file
     open my $fh, '>', $file or die $!;
-    print $fh encode_utf8 decode_entities $tree->as_HTML;
+    # print $fh encode_utf8 decode_entities $tree->as_HTML;
+    print $fh encode_utf8 decode_entities $content->as_HTML;
     # print $fh encode_utf8 $extracted_html;
     close $fh or die $!;
 
