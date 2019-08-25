@@ -2,24 +2,23 @@
 
 =head1 DESCRIPTION
 
-Get HTML files extracted from LPIC exercise pages
+Get HTML files extracted from LinuC exercise pages
 (Update every other Friday)
 
 =cut
 
 use strict;
 use warnings;
-use 5.010;
+# use 5.010;
 # use utf8; # XXX
 # $|++;
 
-# use encoding 'utf-8'; # XXX
 # binmode STDOUT, ":utf8"; # XXX
 
 use Encode qw( encode_utf8 );
 use HTML::Entities qw( decode_entities );
 use File::Basename qw( basename );
-use Path::Class qw( file dir );
+use Path::Class qw( file );
 use WWW::Mechanize;
 use HTML::TreeBuilder;
 # use Web::Scraper;
@@ -29,8 +28,8 @@ use POSIX qw( strftime );
 # XXX: Encoding
 
 # my @exams = ( 101, 102, 201, 202, 301 .. 304 );
-# my @exams = ( 101, 102, 201, 202 );
-my @exams = ( 101, 102 );
+my @exams = ( 101, 102, 201, 202 );
+# my @exams = ( 101, 102 );
 my $max_ps = 4;
 
 &get_from_exams( $max_ps, @exams );
@@ -57,11 +56,12 @@ sub get_from_exams {
 sub get_from_exam {
     my $exam = shift;
 
-    mkdir $exam unless -d $exam;
+    mkdir $exam;
 
     my $mech = WWW::Mechanize->new( autocheck => 1 );
     ## Go to exam list
     my $url= 'http://www.lpi.or.jp/ex';
+    # my $url= 'https://lpi.or.jp/ex';
     $mech->get($url);
     ## Go to exercise list for exam
     $mech->follow_link( url_regex => qr!ex/$exam! );
@@ -117,7 +117,7 @@ sub check_update {
     my ( $num, $exam, $file, @links ) = @_;
 
     if ( -s $file ) {
-        my @local_files = <$exam/*'.shtml'>;
+        my @local_files = glob "$exam/*.shtml";
         # say @local_files; exit;    # Debug
 
         if ( $num == 1 and @links == @local_files ) {
@@ -136,10 +136,10 @@ sub check_update {
 
     # else {
     #     my $backup = 'backup';
-    #     mkdir $backup unless -d $backup;
+    #     mkdir $backup;
     #     my $today = strftime '%y%m%d', localtime;
     #     rename $exam, dir( $backup, $today . '_' . $exam );
-    #     mkdir $exam unless -d $exam;
+    #     mkdir $exam;
     # }
 }
 
@@ -172,7 +172,7 @@ sub extract_html {
     # print @enc_extracted_htmls; exit;    # Debug
     # print $enc_extracted_html; exit;    # Debug
 
-    my $extracted_html = decode_entities($enc_extracted_html);
+    my $extracted_html = decode_entities $enc_extracted_html;
     # say $extracted_html; exit;    # Debug
 
     ## Title

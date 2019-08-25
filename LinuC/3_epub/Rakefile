@@ -1,11 +1,11 @@
-SRC = '../1_download'
-# SRC = '../2_process'
+# SRC = '../1_download'
+SRC = '../2_process'
 DST = 'build'
 MAKEPRG = './make.sh'
 
 ## FIXME
-EPUB = (0..3).to_a.map {|n| "#{DST}/lpic-#{n}.epub"}
-# EPUB = (0..3).to_a.map {|n| "#{DST}/lpic-#{n}_*.epub"}
+EPUB = (0..3).to_a.map {|n| "#{DST}/linuc-#{n}.epub"}
+# EPUB = (0..3).to_a.map {|n| "#{DST}/linuc-#{n}_*.epub"}
 
 require 'rake/clean'
 CLOBBER.include("#{DST}/*.epub")
@@ -15,8 +15,8 @@ task :default => EPUB[1]
 
 (1..3).each do |n|
 
-  desc "Build LPIC-#{n}"
-  task "lpic-#{n}" => EPUB[n]
+  desc "Build LinuC-#{n}"
+  task "#{n}" => EPUB[n]
 
   # file EPUB[n] => Dir.glob("#{SRC}/#{n}0?/*.shtml") do
   file EPUB[n] => FileList["#{SRC}/#{n}0?/*.shtml"] do
