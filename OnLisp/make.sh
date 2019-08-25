@@ -8,8 +8,8 @@ Build ePub
 =cut
 POD
 
-src_dir=src
-html_dir=ya_onlispjhtml
+readonly src_dir=src
+readonly html_dir=ya_onlispjhtml
 
 pandoc -f html \
 $src_dir/title.html \

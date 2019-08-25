@@ -12,18 +12,19 @@ use warnings;
 # use utf8; # XXX
 # $|++;
 
-use encoding 'utf-8'; # XXX
 # binmode STDOUT, ":utf8"; # XXX
 
 use Encode qw( encode_utf8 );
-use HTML::Entities qw( encode_entities decode_entities );
+use HTML::Entities qw( decode_entities );
 use Path::Class qw( file );
 use HTML::TreeBuilder;
+use IO::HTML qw( html_file );
 use Parallel::ForkManager;
 
-# XXX: Encoding
+# FIXME: Encoding
+# &amp
 
-my $max_ps = 4;
+my $max_ps = 8;
 
 ## Directories
 my $src_dir = 'onlispjhtml';
@@ -34,7 +35,7 @@ my $dst_dir = 'ya_onlispjhtml';
 sub omit_para {
     my ( $max_ps, $src_dir, $dst_dir ) = @_;
 
-    mkdir $dst_dir unless -d $dst_dir;
+    mkdir $dst_dir;
 
     ## Sections
     my @secs = qw(
@@ -85,8 +86,7 @@ sub omit {
 
     ## Parse HTML
     my $tree = HTML::TreeBuilder->new;
-    $tree->parse_file( $src_dir . '/' . $sec . '.html' );
-    # $tree->parse_file( file( $src_dir, $sec . '.html' ) );
+    $tree->parse_file( html_file file( $src_dir, $sec . '.html' ));
 
     ## Omit Content
     $_->delete for (
@@ -100,8 +100,6 @@ sub omit {
     open my $fh, '>', file( $dst_dir, $sec . '.html' )
         or die $!;
     print $fh encode_utf8 decode_entities $tree->as_HTML;
-    # print $fh decode_entities $tree->as_HTML;
-    # print $fh $tree->as_HTML;
     close $fh or die $!;
 
     ## Output progress
